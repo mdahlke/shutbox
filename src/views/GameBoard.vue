@@ -248,7 +248,7 @@
 		padding-left: 0;
 		
 		.shut-item {
-			flex: 1 0 auto;
+			flex: 1 0 0;
 			position: relative;
 			margin: 0 2px;
 			height: 80px;
