@@ -4,7 +4,7 @@
 		
 		<div class="available">
 			<ul class="shut-items">
-				<li v-for="number in getNumbers"
+				<li v-for="number in numbers"
 				    @click="toggleShut(number)"
 				    :class="{ 'shut': isShut(number), 'selected': isSelected(number) }"
 				    class="shut-item">{{ number }}
@@ -18,9 +18,9 @@
 			>{{ die }}</span>
 		</div>
 		
-		<div v-if="diceTotal()"
+		<div v-if="diceTotal"
 		     class="dice-total">
-			{{ diceTotal() }}
+			{{ diceTotal }}
 		</div>
 		
 		<div class="action-buttons">
@@ -44,49 +44,116 @@
 					Reset Game
 				</button>
 			</div>
-		
+			
+			<input v-model="numberOfDie"
+			       type="number" />
 		</div>
 	</section>
 </template>
 
 <script>
-	import {mapGetters} from 'vuex';
+	import {mapState, mapGetters, mapMutations, mapActions} from 'vuex';
 	
 	export default {
 		name: 'GameBoard',
 		data() {
 			return {
-				numberOfDie: 2,
-				diceValues: [],
 				shut: [],
 				roundShut: [],
-				errorMessage: '',
-				roundConfirmed: true
 			};
 		},
 		computed: {
 			...mapGetters({
-				getNumbers: 'getNumbers'
-			})
+				diceTotal: 'diceTotal',
+				numberOfDie: 'getNumberOfDie',
+				numbers: 'getNumbers',
+				errorMessage: 'getErrorMessage',
+				roundConfirmed: 'getRoundConfirmed',
+				currentRoundNumbers: 'getCurrentRoundNumbers',
+				closedNumbers: 'getClosedNumbers',
+				diceValues: 'diceValues',
+			}),
+			diceValues: {
+				get() {
+					return this.$store.state.diceValues;
+				},
+				set(val) {
+					this.setDiceValues(val);
+				}
+			},
+			numberOfDie: {
+				get() {
+					return this.$store.state.numberOfDie;
+				},
+				set(val) {
+					this.setNumberOfDie(val);
+				}
+			},
+			diceValues: {
+				get() {
+					return this.$store.state.diceValues;
+				},
+				set(val) {
+					this.setDiceValues(val);
+				}
+			},
+			errorMessage: {
+				get() {
+					return this.$store.state.errorMessage;
+				},
+				set(val) {
+					this.setErrorMessage(val);
+				}
+			},
+			currentRoundNumbers: {
+				get() {
+					return this.$store.state.currentRoundNumbers;
+				},
+				set(val) {
+					this.setCurrentRoundNumbers(val);
+				}
+			},
+			roundConfirmed: {
+				get() {
+					return this.$store.state.roundConfirmed;
+				},
+				set(val) {
+					this.setRoundConfirmed(val);
+				}
+			}
 		},
 		created() {
 			this.resetDice();
 		},
 		methods: {
+			...mapMutations([
+				'setNumberOfDie',
+				'setDiceValues',
+				'addDieValue',
+				'setErrorMessage',
+				'setCurrentRoundNumbers',
+				'addCurrentRoundNumber',
+				'setRoundConfirmed',
+			]),
+			...mapActions([
+				'resetGame',
+				'resetRound',
+				'resetDice',
+				'resetErrorMessage',
+				'confirmShut',
+				'toggleShut',
+			]),
 			rollDice() {
 				this.resetErrorMessage();
 				if (this.roundConfirmed) {
 					// new round
-					this.roundShut = [];
-					this.diceValues = [];
-					
-					console.log(this.numberOfDie);
+					this.setDiceValues([]);
 					
 					for (let i = 0; i < this.numberOfDie; i++) {
-						this.diceValues.push(this.getRandom());
+						this.addDieValue(this.getRandom());
 					}
 					
-					this.roundConfirmed = false;
+					this.setRoundConfirmed(false);
 					
 					this.availableToDrop();
 				}
@@ -103,59 +170,16 @@
 				console.log({index});
 				return this.diceValues[index];
 			},
-			diceTotal() {
-				return this.diceValues.length ? this.diceValues.reduce((a, b) => a + b) : 0;
-			},
-			toggleShut(number) {
-				this.resetErrorMessage();
-				const index = this.roundShut.indexOf(number);
-				
-				if (index !== -1) {
-					this.roundShut.splice(index, 1);
-				} else {
-					this.roundShut.push(number);
-				}
-			},
-			confirmShut() {
-				this.resetErrorMessage();
-				const total = this.roundShut.length ? this.roundShut.reduce((a, b) => a + b) : 0;
-				const diceTotal = this.diceTotal();
-				
-				if (total === diceTotal) {
-					if (this.roundShut.length) {
-						this.shut = this.shut.concat(this.roundShut);
-					} else {
-						this.shut = this.roundShut;
-					}
-					this.resetDice();
-					this.roundConfirmed = true;
-					this.roundShut = [];
-					this.diceValues = [];
-				} else {
-					this.errorMessage = 'That doesn\'t add up';
-				}
-			},
 			isSelected(number) {
-				return this.roundShut.includes(number);
+				return this.currentRoundNumbers.includes(number);
 			},
 			isShut(number) {
-				return this.shut.includes(number);
+				return this.closedNumbers.includes(number);
 			},
 			resetDice() {
-				for (let i = 0; i < this.numberOfDie; i++) {
+				for (let i = 0; i < this.getNumberOfDie; i++) {
 					this.diceValues.push(0);
 				}
-			},
-			resetErrorMessage() {
-				this.errorMessage = '';
-			},
-			resetGame() {
-				this.resetDice();
-				this.shut = [];
-				this.roundShut = [];
-				this.roundConfirmed = true;
-				this.diceValues = [];
-				this.errorMessage = '';
 			}
 		}
 	};
