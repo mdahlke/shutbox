@@ -20,7 +20,7 @@
 			      class="die"
 			>{{ die }}</span>
 				
-				<div v-if="diceTotal"
+				<div v-if="addForMe && diceTotal"
 				     class="dice-total">
 					= {{ diceTotal }}
 				</div>
@@ -54,6 +54,12 @@
 				<input v-model="numberOfDie"
 				       id="number-of-die"
 				       type="number" />
+				
+				<br/>
+				<label for="add-for-me">Add the dice for you?</label>
+				<input v-model="addForMe"
+				       id="add-for-me"
+				type="checkbox"/>
 			</div>
 		</div>
 	</section>
@@ -129,6 +135,14 @@
 				set(val) {
 					this.setRoundConfirmed(val);
 				}
+			},
+			addForMe: {
+				get() {
+					return this.$store.state.addForMe;
+				},
+				set(val) {
+					this.setAddForMe(val);
+				}
 			}
 		},
 		created() {
@@ -142,7 +156,8 @@
 				'setErrorMessage',
 				'setCurrentRoundNumbers',
 				'addCurrentRoundNumber',
-				'setRoundConfirmed'
+				'setRoundConfirmed',
+				'setAddForMe'
 			]),
 			...mapActions([
 				'resetGame',

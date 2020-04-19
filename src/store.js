@@ -18,8 +18,8 @@ const store = new Vuex.Store({
 		currentRoundNumbers: [],
 		roundConfirmed: true,
 		errorMessage: '',
-		gameStatus: GAME_STATUS_BEFORE
-		
+		gameStatus: GAME_STATUS_BEFORE,
+		addForMe: true,
 	},
 	getters: {
 		getNumbers: state => state.numbers,
@@ -70,6 +70,9 @@ const store = new Vuex.Store({
 		},
 		setClosedNumbers(state, closed) {
 			state.closedNumbers = closed;
+		},
+		setAddForMe(state, add){
+			state.addForMe = add;
 		}
 	},
 	actions: {
