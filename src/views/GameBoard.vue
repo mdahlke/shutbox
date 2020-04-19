@@ -146,7 +146,7 @@
 			}
 		},
 		created() {
-			this.resetDice();
+			// this.resetDice();
 		},
 		methods: {
 			...mapMutations([
