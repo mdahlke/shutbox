@@ -6,20 +6,24 @@
 			<ul class="shut-items">
 				<li v-for="number in getNumbers"
 				    @click="toggleShut(number)"
-				    :class="{ 'shut': isShut(number) }"
+				    :class="{ 'shut': isShut(number), 'selected': isSelected(number) }"
 				    class="shut-item">{{ number }}
 				</li>
 			</ul>
-			
-			<div class="round-shut">{{ roundShut }}</div>
 		</div>
 		
 		<div class="dice">
-			<div class="rolled">
-				<strong>Die 1</strong>: <span>{{ die1 }}</span>
-				<br />
-				<strong>Die 2</strong>: <span>{{ die2 }}</span>
-			</div>
+			<span v-for="die in diceValues"
+			      class="die"
+			>{{ die }}</span>
+		</div>
+		
+		<div v-if="diceTotal()"
+		     class="dice-total">
+			{{ diceTotal() }}
+		</div>
+		
+		<div class="action-buttons">
 			
 			<button v-if="!roundConfirmed"
 			        @click="confirmShut">
@@ -52,8 +56,8 @@
 		name: 'GameBoard',
 		data() {
 			return {
-				die1: 0,
-				die2: 0,
+				numberOfDie: 2,
+				diceValues: [],
 				shut: [],
 				roundShut: [],
 				errorMessage: '',
@@ -65,15 +69,22 @@
 				getNumbers: 'getNumbers'
 			})
 		},
+		created() {
+			this.resetDice();
+		},
 		methods: {
 			rollDice() {
 				this.resetErrorMessage();
 				if (this.roundConfirmed) {
 					// new round
 					this.roundShut = [];
+					this.diceValues = [];
 					
-					this.die1 = this.getRandom();
-					this.die2 = this.getRandom();
+					console.log(this.numberOfDie);
+					
+					for (let i = 0; i < this.numberOfDie; i++) {
+						this.diceValues.push(this.getRandom());
+					}
 					
 					this.roundConfirmed = false;
 					
@@ -88,8 +99,12 @@
 				
 				
 			},
+			dieValue(index) {
+				console.log({index});
+				return this.diceValues[index];
+			},
 			diceTotal() {
-				return this.die1 + this.die2;
+				return this.diceValues.length ? this.diceValues.reduce((a, b) => a + b) : 0;
 			},
 			toggleShut(number) {
 				this.resetErrorMessage();
@@ -103,23 +118,33 @@
 			},
 			confirmShut() {
 				this.resetErrorMessage();
-				const total = this.roundShut.reduce((a, b) => a + b);
+				const total = this.roundShut.length ? this.roundShut.reduce((a, b) => a + b) : 0;
 				const diceTotal = this.diceTotal();
 				
 				if (total === diceTotal) {
-					this.shut = this.shut.concat(this.roundShut);
+					if (this.roundShut.length) {
+						this.shut = this.shut.concat(this.roundShut);
+					} else {
+						this.shut = this.roundShut;
+					}
 					this.resetDice();
 					this.roundConfirmed = true;
+					this.roundShut = [];
+					this.diceValues = [];
 				} else {
 					this.errorMessage = 'That doesn\'t add up';
 				}
+			},
+			isSelected(number) {
+				return this.roundShut.includes(number);
 			},
 			isShut(number) {
 				return this.shut.includes(number);
 			},
 			resetDice() {
-				this.die1 = 0;
-				this.die2 = 0;
+				for (let i = 0; i < this.numberOfDie; i++) {
+					this.diceValues.push(0);
+				}
 			},
 			resetErrorMessage() {
 				this.errorMessage = '';
@@ -128,6 +153,9 @@
 				this.resetDice();
 				this.shut = [];
 				this.roundShut = [];
+				this.roundConfirmed = true;
+				this.diceValues = [];
+				this.errorMessage = '';
 			}
 		}
 	};
@@ -137,6 +165,13 @@
 	
 	.shut {
 		text-decoration: line-through;
+		background-color: saddlebrown;
+	}
+	
+	.selected {
+		font-weight: bold;
+		text-decoration: underline;
+		background-color: green;
 	}
 	
 	.error-message {
@@ -147,22 +182,46 @@
 		display: flex;
 		justify-content: center;
 		list-style: none;
+		margin-left: 0;
+		padding-left: 0;
 		
 		.shut-item {
-			flex: 0 0 auto;
+			flex: 1 1 auto;
 			margin: 0 2px;
-			padding: 30px 15px;
-			background-color: brown;
-			color: white;
-			cursor: pointer;
+			/*padding: 30px 15px;*/
+			height: 40px;
+			line-height: 40px;
+			background-color: #e2a67b;
+			color: saddlebrown;
+			
+			&:not(.shut) {
+				cursor: pointer;
+			}
 			
 			&.shut {
-				color: brown;
+				background-color: saddlebrown;
+				color: saddlebrown;
+				cursor: not-allowed;
+				pointer-events: none;
 			}
 		}
 	}
 	
 	.reset {
 		margin-top: 10vh;
+	}
+	
+	.dice {
+		display: flex;
+		justify-content: center;
+		
+		.die {
+			margin: 0 3px;
+			border: 1px solid #000;
+			border-radius: 10%;
+			line-height: 40px;
+			height: 40px;
+			width: 40px;
+		}
 	}
 </style>
