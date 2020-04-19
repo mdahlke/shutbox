@@ -30,6 +30,7 @@ const store = new Vuex.Store({
 		getCurrentRoundNumbers: state => state.currentRoundNumbers,
 		getRoundConfirmed: state => state.roundConfirmed,
 		getErrorMessage: state => state.errorMessage,
+		isBeforeGame: state => state.gameStatus === GAME_STATUS_BEFORE,
 		
 		diceTotal: state => {
 			return state.diceValues.length ? state.diceValues.reduce((a, b) => a + b) : 0;
@@ -41,6 +42,9 @@ const store = new Vuex.Store({
 			this.replaceState(
 				Object.assign(state, store)
 			);
+		},
+		setGameStatus(state, status) {
+			state.gameStatus = status;
 		},
 		setNumberOfDie(state, number) {
 			state.numberOfDie = Number(number);
@@ -69,6 +73,9 @@ const store = new Vuex.Store({
 		}
 	},
 	actions: {
+		startGame({commit}) {
+			commit('setGameStatus', GAME_STATUS_ACTIVE);
+		},
 		resetDice({commit, getters, state}) {
 			for (let i = 0; i < getters.getNumberOfDie; i++) {
 				commit('addDieValue', 0);
@@ -86,6 +93,7 @@ const store = new Vuex.Store({
 		resetGame({commit, dispatch}) {
 			commit('setRoundConfirmed', true);
 			commit('setClosedNumbers', []);
+			commit('setGameStatus', GAME_STATUS_BEFORE);
 			dispatch('resetRound', []);
 		},
 		confirmShut({commit, getters, dispatch}) {
@@ -112,8 +120,12 @@ const store = new Vuex.Store({
 			dispatch('resetErrorMessage');
 			const index = getters.getCurrentRoundNumbers.indexOf(number);
 			
+			console.log({index});
+			
 			if (index !== -1) {
-				commit('setCurrentRoundNumbers', getters.getCurrentRoundNumbers.splice(index, 1));
+				const currentNumbers = getters.getCurrentRoundNumbers;
+				currentNumbers.splice(index, 1);
+				commit('setCurrentRoundNumbers', currentNumbers);
 			} else {
 				commit('addCurrentRoundNumber', number);
 			}

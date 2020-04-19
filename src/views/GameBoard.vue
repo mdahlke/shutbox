@@ -2,26 +2,30 @@
 	<section id="game-board">
 		<h1>Shutbox</h1>
 		
-		<div class="available">
-			<ul class="shut-items">
-				<li v-for="number in numbers"
-				    @click="toggleShut(number)"
-				    :class="{ 'shut': isShut(number), 'selected': isSelected(number) }"
-				    class="shut-item">{{ number }}
-				</li>
-			</ul>
-		</div>
-		
-		<div class="dice">
+		<section class="board-wrap">
+			<div class="available">
+				<ul class="shut-items">
+					<li v-for="number in numbers"
+					    @click="toggleShut(number)"
+					    :class="{ 'shut': isShut(number), 'selected': isSelected(number) }"
+					    class="shut-item">
+						<span class="number">{{ number }}</span>
+						<span class="finger"></span>
+					</li>
+				</ul>
+			</div>
+			
+			<div class="dice">
 			<span v-for="die in diceValues"
 			      class="die"
 			>{{ die }}</span>
-		</div>
-		
-		<div v-if="diceTotal"
-		     class="dice-total">
-			{{ diceTotal }}
-		</div>
+				
+				<div v-if="diceTotal"
+				     class="dice-total">
+					= {{ diceTotal }}
+				</div>
+			</div>
+		</section>
 		
 		<div class="action-buttons">
 			
@@ -45,8 +49,12 @@
 				</button>
 			</div>
 			
-			<input v-model="numberOfDie"
-			       type="number" />
+			<div v-if="isBeforeGame">
+				<label for="number-of-die">Change the number of dice to use: </label>
+				<input v-model="numberOfDie"
+				       id="number-of-die"
+				       type="number" />
+			</div>
 		</div>
 	</section>
 </template>
@@ -59,7 +67,7 @@
 		data() {
 			return {
 				shut: [],
-				roundShut: [],
+				roundShut: []
 			};
 		},
 		computed: {
@@ -72,6 +80,7 @@
 				currentRoundNumbers: 'getCurrentRoundNumbers',
 				closedNumbers: 'getClosedNumbers',
 				diceValues: 'diceValues',
+				isBeforeGame: 'isBeforeGame'
 			}),
 			diceValues: {
 				get() {
@@ -133,7 +142,7 @@
 				'setErrorMessage',
 				'setCurrentRoundNumbers',
 				'addCurrentRoundNumber',
-				'setRoundConfirmed',
+				'setRoundConfirmed'
 			]),
 			...mapActions([
 				'resetGame',
@@ -142,9 +151,12 @@
 				'resetErrorMessage',
 				'confirmShut',
 				'toggleShut',
+				'startGame'
 			]),
 			rollDice() {
 				this.resetErrorMessage();
+				this.startGame();
+				
 				if (this.roundConfirmed) {
 					// new round
 					this.setDiceValues([]);
@@ -175,17 +187,19 @@
 			},
 			isShut(number) {
 				return this.closedNumbers.includes(number);
-			},
-			resetDice() {
-				for (let i = 0; i < this.getNumberOfDie; i++) {
-					this.diceValues.push(0);
-				}
 			}
 		}
 	};
 </script>
 
 <style scoped lang="scss">
+	
+	.board-wrap {
+		border: 3px solid saddlebrown;
+		background: darkgreen;
+		background-image: url('../assets/felt.jpg');
+		padding-bottom: 20px
+	}
 	
 	.shut {
 		text-decoration: line-through;
@@ -206,27 +220,62 @@
 		display: flex;
 		justify-content: center;
 		list-style: none;
+		margin-top: 2px;
 		margin-left: 0;
+		margin-bottom: 150px;
 		padding-left: 0;
 		
 		.shut-item {
 			flex: 1 1 auto;
+			position: relative;
 			margin: 0 2px;
-			/*padding: 30px 15px;*/
-			height: 40px;
-			line-height: 40px;
+			height: 80px;
+			line-height: 80px;
 			background-color: #e2a67b;
 			color: saddlebrown;
+			transition-property: height;
+			transition-duration: 1s;
+			perspective: 1000px;
+			transform-style: preserve-3d;
+			
+			.finger {
+			}
 			
 			&:not(.shut) {
 				cursor: pointer;
 			}
 			
 			&.shut {
-				background-color: saddlebrown;
-				color: saddlebrown;
+				/*background-color: saddlebrown;*/
+				/*color: saddlebrown;*/
 				cursor: not-allowed;
 				pointer-events: none;
+			}
+			
+			&.selected,
+			&.shut {
+				
+				.finger {
+					height: 80px;
+					transform: scaleY(-1);
+				}
+			}
+			
+			.number {
+				position: relative;
+				z-index: -1;
+			}
+			
+			.finger {
+				position: absolute;
+				top: 100%;
+				left: 0;
+				background: saddlebrown;
+				height: 60px;
+				width: 100%;
+				transition-duration: 1s;
+				transition-property: all;
+				transform-origin: top;
 			}
 		}
 	}
@@ -238,6 +287,8 @@
 	.dice {
 		display: flex;
 		justify-content: center;
+		align-items: center;
+		color: #fff;
 		
 		.die {
 			margin: 0 3px;
@@ -246,6 +297,8 @@
 			line-height: 40px;
 			height: 40px;
 			width: 40px;
+			background-color: #fff;
+			color: #000;
 		}
 	}
 </style>
