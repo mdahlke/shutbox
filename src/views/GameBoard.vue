@@ -30,12 +30,14 @@
 		<div class="action-buttons">
 			
 			<button v-if="!roundConfirmed"
-			        @click="confirmShut">
+			        @click="confirmShut"
+			class="btn btn-big">
 				Confirm
 			</button>
 			
 			<button v-if="roundConfirmed"
 			        @click="rollDice"
+			        class="btn btn-big"
 			        type="button">Roll
 			</button>
 			
@@ -44,7 +46,8 @@
 			</div>
 			
 			<div class="reset">
-				<button @click="resetGame">
+				<button @click="resetGame"
+				        class="btn btn-small">
 					Reset Game
 				</button>
 			</div>
@@ -55,11 +58,11 @@
 				       id="number-of-die"
 				       type="number" />
 				
-				<br/>
+				<br />
 				<label for="add-for-me">Add the dice for you?</label>
 				<input v-model="addForMe"
 				       id="add-for-me"
-				type="checkbox"/>
+				       type="checkbox" />
 			</div>
 		</div>
 	</section>
@@ -210,10 +213,14 @@
 <style scoped lang="scss">
 	
 	.board-wrap {
-		border: 3px solid saddlebrown;
-		background: darkgreen;
-		background-image: url('../assets/felt.jpg');
-		padding-bottom: 20px
+		padding-bottom: 20px;
+		border: 20px solid saddlebrown;
+		background-color: darkgreen;
+		background-image: url(../assets/felt.jpg);
+		background-size: 100% 100%;
+		border-image-source: url(../assets/wood-grain.jpeg);
+		border-image-slice: 500;
+		box-shadow: inset 0px 0 50px black;
 	}
 	
 	.shut {
@@ -314,6 +321,30 @@
 			width: 40px;
 			background-color: #fff;
 			color: #000;
+		}
+	}
+	
+	.btn {
+		margin-top: 10px;
+		margin-bottom: 10px;
+		border-radius: 0;
+		
+		&.btn-big  {
+			font-size: 20px;
+			padding: 10px 18px;
+			background-color: #fefefe;
+			color: black;
+			
+			&:focus {
+				outline: none;
+			}
+		}
+		
+		&.btn-small {
+			padding: 5px 10px;
+			background: darkred;
+			color: white;
+			border: 0;
 		}
 	}
 </style>
