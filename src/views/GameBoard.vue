@@ -41,6 +41,7 @@
 			
 			<button v-if="!roundConfirmed"
 			        @click="confirmShut"
+			        :disabled="(!(currentRoundNumbers.length && (currentRoundTotal == diceTotal)))"
 			        class="btn btn-big">
 				Confirm
 			</button>
@@ -98,9 +99,11 @@
 				roundConfirmed: 'getRoundConfirmed',
 				currentRoundNumbers: 'getCurrentRoundNumbers',
 				closedNumbers: 'getClosedNumbers',
-				diceValues: 'diceValues',
+				diceValues: 'getDiceValues',
 				isBeforeGame: 'isBeforeGame',
-				score: 'getScore'
+				score: 'getScore',
+				isShutbox: 'isShutbox',
+				currentRoundTotal: 'currentRoundTotal',
 			}),
 			diceValues: {
 				get() {
@@ -345,6 +348,10 @@
 			padding: 10px 18px;
 			background-color: #fefefe;
 			color: black;
+			
+			&:disabled {
+				opacity: 0.2;
+			}
 			
 			&:focus {
 				outline: none;

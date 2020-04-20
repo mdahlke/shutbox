@@ -35,6 +35,9 @@ const store = new Vuex.Store({
 		getErrorMessage: state => state.errorMessage,
 		isBeforeGame: state => state.gameStatus === GAME_STATUS_BEFORE,
 		
+		currentRoundTotal: state => {
+			return state.currentRoundNumbers.length ? state.currentRoundNumbers.reduce((a, b) => a + b) : 0
+		},
 		diceTotal: state => {
 			return state.diceValues.length ? state.diceValues.reduce((a, b) => a + b) : 0;
 		},
@@ -109,7 +112,7 @@ const store = new Vuex.Store({
 		},
 		confirmShut({commit, getters, dispatch}) {
 			dispatch('resetErrorMessage');
-			const total = getters.getCurrentRoundNumbers.length ? getters.getCurrentRoundNumbers.reduce((a, b) => a + b) : 0;
+			const total = getters.currentRoundTotal;
 			
 			if (total === getters.diceTotal) {
 				if (getters.getCurrentRoundNumbers.length) {
