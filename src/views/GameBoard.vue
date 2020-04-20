@@ -1,6 +1,7 @@
 <template>
 	<section id="game-board">
-		<div :class="{'is-shutbox': isShutbox}"
+		<div @click="clearShutboxWin"
+				:class="{'is-shutbox': isShutbox}"
 		     class="shutbox-won">
 			🎉🎉 You Won! 🎉🎉
 		</div>
@@ -181,7 +182,8 @@
 				'resetErrorMessage',
 				'confirmShut',
 				'toggleShut',
-				'startGame'
+				'startGame',
+				'clearShutboxWin',
 			]),
 			rollDice() {
 				this.resetErrorMessage();

@@ -153,6 +153,9 @@ const store = new Vuex.Store({
 			} else {
 				commit('addCurrentRoundNumber', number);
 			}
+		},
+		clearShutboxWin({commit}){
+			commit('setGameStatus', GAME_STATUS_BEFORE);
 		}
 	}
 });
