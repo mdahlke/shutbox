@@ -25,6 +25,11 @@
 				</ul>
 			</div>
 			
+			<div v-if="addForMe && currentRoundTotal"
+			     class="round-score">
+				{{ currentRoundTotal }}
+			</div>
+			
 			<div class="dice">
 			<span v-for="die in diceValues"
 			      class="die"
@@ -229,6 +234,7 @@
 <style scoped lang="scss">
 	
 	.board-wrap {
+		position: relative;
 		padding-bottom: 20px;
 		border: 20px solid saddlebrown;
 		background-color: darkgreen;
@@ -237,6 +243,15 @@
 		border-image-source: url(../assets/wood-grain.jpeg);
 		border-image-slice: 500;
 		box-shadow: inset 0px 0 50px black;
+	}
+	
+	.round-score {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		font-weight: 600;
+		color: #054928;
+		font-size: 24px;
 	}
 	
 	.shut {
