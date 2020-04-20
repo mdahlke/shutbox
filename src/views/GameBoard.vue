@@ -239,10 +239,10 @@
 		padding-bottom: 20px;
 		border: 20px solid saddlebrown;
 		background-color: darkgreen;
-		background-image: url(../assets/felt.jpg);
+		background-image: url(../assets/felt-2.jpg);
 		background-size: 100% 100%;
-		border-image-source: url(../assets/wood-grain.jpeg);
-		border-image-slice: 500;
+		border-image-source: url(../assets/wood-grain-3.png);
+		border-image-slice: 80;
 		box-shadow: inset 0 0 50px black;
 		max-width: 800px;
 	}
