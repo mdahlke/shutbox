@@ -243,8 +243,8 @@
 		background-color: darkgreen;
 		background-image: url(../assets/felt-2.jpg);
 		background-size: 100% 100%;
-		border-image-source: url(../assets/wood-grain-3.png);
-		border-image-slice: 80;
+		border-image-source: url(../assets/wood-grain-4.png);
+		border-image-slice: 40;
 		box-shadow: inset 0 0 50px black;
 		max-width: 800px;
 	}
