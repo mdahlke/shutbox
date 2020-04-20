@@ -235,6 +235,7 @@
 	
 	.board-wrap {
 		position: relative;
+		margin: 0 auto;
 		padding-bottom: 20px;
 		border: 20px solid saddlebrown;
 		background-color: darkgreen;
@@ -242,7 +243,8 @@
 		background-size: 100% 100%;
 		border-image-source: url(../assets/wood-grain.jpeg);
 		border-image-slice: 500;
-		box-shadow: inset 0px 0 50px black;
+		box-shadow: inset 0 0 50px black;
+		max-width: 800px;
 	}
 	
 	.round-score {
