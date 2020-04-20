@@ -19,9 +19,12 @@ const store = new Vuex.Store({
 		roundConfirmed: true,
 		errorMessage: '',
 		gameStatus: GAME_STATUS_BEFORE,
-		addForMe: true,
+		addForMe: true
 	},
 	getters: {
+		getScore: state => {
+			return state.openNumbers.length ? state.openNumbers.reduce((a, b) => a + b) : 0;
+		},
 		getNumbers: state => state.numbers,
 		getNumberOfDie: state => state.numberOfDie,
 		getDiceValues: state => state.diceValues,
@@ -49,6 +52,9 @@ const store = new Vuex.Store({
 		setNumberOfDie(state, number) {
 			state.numberOfDie = Number(number);
 		},
+		setOpenNumbers(state, numbers) {
+			state.openNumbers = numbers;
+		},
 		setDiceValues(state, values) {
 			state.diceValues = values;
 		},
@@ -71,7 +77,7 @@ const store = new Vuex.Store({
 		setClosedNumbers(state, closed) {
 			state.closedNumbers = closed;
 		},
-		setAddForMe(state, add){
+		setAddForMe(state, add) {
 			state.addForMe = add;
 		}
 	},
@@ -93,10 +99,11 @@ const store = new Vuex.Store({
 			dispatch('resetErrorMessage', []);
 			dispatch('resetDice', []);
 		},
-		resetGame({commit, dispatch}) {
+		resetGame({commit, dispatch, getters}) {
 			commit('setRoundConfirmed', true);
 			commit('setClosedNumbers', []);
 			commit('setGameStatus', GAME_STATUS_BEFORE);
+			commit('setOpenNumbers', getters.getNumbers);
 			dispatch('resetRound', []);
 		},
 		confirmShut({commit, getters, dispatch}) {
@@ -108,8 +115,12 @@ const store = new Vuex.Store({
 					const currentRound = getters.getCurrentRoundNumbers;
 					const closedNumbers = getters.getClosedNumbers;
 					const closed = closedNumbers.concat(currentRound);
-					
 					commit('setClosedNumbers', closed);
+					
+					const openNumbers = getters.getOpenNumbers.filter(a => !closed.includes(a));
+					console.log({closedNumbers, openNumbers});
+					
+					commit('setOpenNumbers', openNumbers);
 				} else {
 					commit('setClosedNumbers', getters.getCurrentRoundNumbers);
 				}

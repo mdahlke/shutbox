@@ -2,6 +2,10 @@
 	<section id="game-board">
 		<h1>Shutbox</h1>
 		
+		<div class="your-score">
+			Your score: <span v-if="!isBeforeGame">{{ score }}</span><span v-else>n/a</span>
+		</div>
+		
 		<section class="board-wrap">
 			<div class="available">
 				<ul class="shut-items">
@@ -89,7 +93,8 @@
 				currentRoundNumbers: 'getCurrentRoundNumbers',
 				closedNumbers: 'getClosedNumbers',
 				diceValues: 'diceValues',
-				isBeforeGame: 'isBeforeGame'
+				isBeforeGame: 'isBeforeGame',
+				score: 'getScore'
 			}),
 			diceValues: {
 				get() {
