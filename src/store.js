@@ -37,7 +37,8 @@ const store = new Vuex.Store({
 		
 		diceTotal: state => {
 			return state.diceValues.length ? state.diceValues.reduce((a, b) => a + b) : 0;
-		}
+		},
+		isShutbox: state => state.gameStatus === GAME_STATUS_ACTIVE && state.openNumbers.length === 0,
 	},
 	mutations: {
 		[INITIALISE_STORE](state, store) {

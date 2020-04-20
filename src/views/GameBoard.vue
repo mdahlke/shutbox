@@ -1,8 +1,14 @@
 <template>
 	<section id="game-board">
+		<div :class="{'is-shutbox': isShutbox}"
+		     class="shutbox-won">
+			🎉🎉 You Won! 🎉🎉
+		</div>
+		
 		<h1>Shutbox</h1>
 		
-		<div class="your-score">
+		<div v-if="addForMe"
+		     class="your-score">
 			Your score: <span v-if="!isBeforeGame">{{ score }}</span><span v-else>n/a</span>
 		</div>
 		
@@ -35,7 +41,7 @@
 			
 			<button v-if="!roundConfirmed"
 			        @click="confirmShut"
-			class="btn btn-big">
+			        class="btn btn-big">
 				Confirm
 			</button>
 			
@@ -57,13 +63,13 @@
 			</div>
 			
 			<div v-if="isBeforeGame">
-				<label for="number-of-die">Change the number of dice to use: </label>
+				<label for="number-of-die">How many dice? </label>
 				<input v-model="numberOfDie"
 				       id="number-of-die"
 				       type="number" />
 				
 				<br />
-				<label for="add-for-me">Add the dice for you?</label>
+				<label for="add-for-me">Do the math for you? </label>
 				<input v-model="addForMe"
 				       id="add-for-me"
 				       type="checkbox" />
@@ -334,7 +340,7 @@
 		margin-bottom: 10px;
 		border-radius: 0;
 		
-		&.btn-big  {
+		&.btn-big {
 			font-size: 20px;
 			padding: 10px 18px;
 			background-color: #fefefe;
@@ -350,6 +356,25 @@
 			background: darkred;
 			color: white;
 			border: 0;
+		}
+	}
+	
+	.shutbox-won {
+		display: none;
+		position: fixed;
+		top: 0;
+		left: 0;
+		height: 100vh;
+		width: 100vw;
+		background-color: rgba(0, 0, 0, 0.79);
+		color: white;
+		align-items: center;
+		justify-content: center;
+		font-size: 10vmin;
+		z-index: 9;
+		
+		&.is-shutbox {
+			display: flex;
 		}
 	}
 </style>
