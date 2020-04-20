@@ -39,15 +39,8 @@
 		
 		<div class="action-buttons">
 			
-			<button v-if="!roundConfirmed"
-			        @click="confirmShut"
-			        :disabled="(!(currentRoundNumbers.length && (currentRoundTotal == diceTotal)))"
-			        class="btn btn-big">
-				Confirm
-			</button>
-			
-			<button v-if="roundConfirmed"
-			        @click="rollDice"
+			<button @click="confirmAndRollDice"
+			        :disabled="(!roundConfirmed && !(currentRoundNumbers.length && (currentRoundTotal == diceTotal)))"
 			        class="btn btn-big"
 			        type="button">Roll
 			</button>
@@ -103,7 +96,7 @@
 				isBeforeGame: 'isBeforeGame',
 				score: 'getScore',
 				isShutbox: 'isShutbox',
-				currentRoundTotal: 'currentRoundTotal',
+				currentRoundTotal: 'currentRoundTotal'
 			}),
 			diceValues: {
 				get() {
@@ -202,6 +195,15 @@
 					this.availableToDrop();
 				}
 			},
+			confirmAndRollDice() {
+				this.$store.dispatch('confirmShut')
+					.then(res => {
+						console.log(this.roundConfirmed);
+						if (this.roundConfirmed) {
+							this.rollDice();
+						}
+					});
+			},
 			getRandom() {
 				return Math.floor(Math.random() * 6) + 1;
 			},
@@ -246,6 +248,10 @@
 		font-weight: bold;
 		text-decoration: underline;
 		background-color: green;
+		
+		.finger {
+			opacity: .7;
+		}
 	}
 	
 	.error-message {
@@ -255,11 +261,12 @@
 	.shut-items {
 		display: flex;
 		justify-content: center;
-		list-style: none;
 		margin-top: 2px;
 		margin-left: 0;
 		margin-bottom: 150px;
 		padding-left: 0;
+		border-bottom: 2px solid silver;
+		list-style: none;
 		
 		.shut-item {
 			flex: 1 0 0;
@@ -267,15 +274,14 @@
 			margin: 0 2px;
 			height: 80px;
 			line-height: 80px;
-			background-color: #e2a67b;
 			color: saddlebrown;
+			background-color: #e2a67b;
+			box-shadow: 1px 0 #733f19;
+			border-right: 1px solid black;
 			transition-property: height;
 			transition-duration: 1s;
 			perspective: 1000px;
 			transform-style: preserve-3d;
-			
-			.finger {
-			}
 			
 			&:not(.shut) {
 				cursor: pointer;
@@ -292,7 +298,7 @@
 			&.shut {
 				
 				.finger {
-					height: 80px;
+					height: calc(80px + 2px);
 					transform: scaleY(-1);
 				}
 			}
@@ -304,9 +310,11 @@
 			
 			.finger {
 				position: absolute;
-				top: 100%;
+				top: calc(100% + 2px);
 				left: 0;
 				background: saddlebrown;
+				box-shadow: 1px 0 #733f19;
+				border-right: 1px solid black;
 				height: 60px;
 				width: 100%;
 				transition-duration: 1s;

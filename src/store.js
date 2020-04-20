@@ -36,12 +36,12 @@ const store = new Vuex.Store({
 		isBeforeGame: state => state.gameStatus === GAME_STATUS_BEFORE,
 		
 		currentRoundTotal: state => {
-			return state.currentRoundNumbers.length ? state.currentRoundNumbers.reduce((a, b) => a + b) : 0
+			return state.currentRoundNumbers.length ? state.currentRoundNumbers.reduce((a, b) => a + b) : 0;
 		},
 		diceTotal: state => {
 			return state.diceValues.length ? state.diceValues.reduce((a, b) => a + b) : 0;
 		},
-		isShutbox: state => state.gameStatus === GAME_STATUS_ACTIVE && state.openNumbers.length === 0,
+		isShutbox: state => state.gameStatus === GAME_STATUS_ACTIVE && state.openNumbers.length === 0
 	},
 	mutations: {
 		[INITIALISE_STORE](state, store) {
@@ -111,28 +111,34 @@ const store = new Vuex.Store({
 			dispatch('resetRound', []);
 		},
 		confirmShut({commit, getters, dispatch}) {
-			dispatch('resetErrorMessage');
-			const total = getters.currentRoundTotal;
-			
-			if (total === getters.diceTotal) {
-				if (getters.getCurrentRoundNumbers.length) {
-					const currentRound = getters.getCurrentRoundNumbers;
-					const closedNumbers = getters.getClosedNumbers;
-					const closed = closedNumbers.concat(currentRound);
-					commit('setClosedNumbers', closed);
-					
-					const openNumbers = getters.getOpenNumbers.filter(a => !closed.includes(a));
-					console.log({closedNumbers, openNumbers});
-					
-					commit('setOpenNumbers', openNumbers);
+			return new Promise((resolve, reject) => {
+				
+				dispatch('resetErrorMessage');
+				const total = getters.currentRoundTotal;
+				
+				if (total === getters.diceTotal) {
+					if (getters.getCurrentRoundNumbers.length) {
+						const currentRound = getters.getCurrentRoundNumbers;
+						const closedNumbers = getters.getClosedNumbers;
+						const closed = closedNumbers.concat(currentRound);
+						commit('setClosedNumbers', closed);
+						
+						const openNumbers = getters.getOpenNumbers.filter(a => !closed.includes(a));
+						console.log({closedNumbers, openNumbers});
+						
+						commit('setOpenNumbers', openNumbers);
+					} else {
+						commit('setClosedNumbers', getters.getCurrentRoundNumbers);
+					}
+					commit('setRoundConfirmed', true);
+					return dispatch('resetRound').then(function () {
+						resolve();
+					});
 				} else {
-					commit('setClosedNumbers', getters.getCurrentRoundNumbers);
+					commit('setErrorMessage', 'That doesn\'t add up');
+					reject();
 				}
-				commit('setRoundConfirmed', true);
-				dispatch('resetRound');
-			} else {
-				commit('setErrorMessage', 'That doesn\'t add up');
-			}
+			});
 		},
 		toggleShut({dispatch, getters, commit}, number) {
 			dispatch('resetErrorMessage');
