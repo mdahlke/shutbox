@@ -1,7 +1,7 @@
 <template>
 	<section id="game-board">
 		<div @click="clearShutboxWin"
-				:class="{'is-shutbox': isShutbox}"
+		     :class="{'is-shutbox': isShutbox}"
 		     class="shutbox-won">
 			🎉🎉 You Won! 🎉🎉
 		</div>
@@ -18,7 +18,13 @@
 				<ul class="shut-items">
 					<li v-for="number in numbers"
 					    @click="toggleShut(number)"
-					    :class="{ 'shut': isShut(number), 'selected': isSelected(number) }"
+					    :class="[
+					    	('number-'+ number),
+					    	{
+					    	'shut': isShut(number),
+					    	'selected': isSelected(number),
+					    	'highlight': shouldHighlight(number),
+					    	}]"
 					    class="shut-item">
 						<span class="number">{{ number }}</span>
 						<span class="finger"></span>
@@ -75,7 +81,22 @@
 				       type="checkbox" />
 			</div>
 		</div>
+		<div v-if="false && addForMe"
+		     class="win-probability">
+			<p>Win probability <small>(not accurate)</small></p>
+			{{ winProbability }}%
+		</div>
+		<div v-if="addForMe"
+		     class="shuttable">
+			<p>Shut-able combinations</p>
+			<ul class="possible-shutable">
+				<li v-for="n in possibleShutable.reverse()">
+					<span v-for="x in n">{{ x }}</span>
+				</li>
+			</ul>
+		</div>
 	</section>
+
 </template>
 
 <script>
@@ -102,7 +123,9 @@
 				isBeforeGame: 'isBeforeGame',
 				score: 'getScore',
 				isShutbox: 'isShutbox',
-				currentRoundTotal: 'currentRoundTotal'
+				currentRoundTotal: 'currentRoundTotal',
+				winProbability: 'winProbability',
+				possibleShutable: 'possibleShutable'
 			}),
 			diceValues: {
 				get() {
@@ -183,7 +206,7 @@
 				'confirmShut',
 				'toggleShut',
 				'startGame',
-				'clearShutboxWin',
+				'clearShutboxWin'
 			]),
 			rollDice() {
 				this.resetErrorMessage();
@@ -228,6 +251,16 @@
 			},
 			isShut(number) {
 				return this.closedNumbers.includes(number);
+			},
+			isPossible(number) {
+				const i = this.possibleShutable.forEach(e => {
+					console.log({e}, e.indexOf(number));
+					return e.indexOf(number);
+				});
+				console.log(i);
+			},
+			shouldHighlight(number) {
+				return this.addForMe && this.possibleShutable.some(e => e.length === 1 && e[0] === number);
 			}
 		}
 	};
@@ -340,6 +373,11 @@
 				transition-property: all;
 				transform-origin: top;
 			}
+			
+			&.highlight {
+				outline: 2px dashed #baf7a6;
+				box-shadow: inset 0 0 13px 2px #baf7a6;
+			}
 		}
 	}
 	
@@ -409,6 +447,19 @@
 		
 		&.is-shutbox {
 			display: flex;
+		}
+	}
+	
+	.possible-shutable {
+		list-style: none;
+		padding-left: 0;
+		
+		li span {
+			&:not(:last-of-type) {
+				&::after {
+					content: ', '
+				}
+			}
 		}
 	}
 </style>

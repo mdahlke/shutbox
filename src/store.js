@@ -6,6 +6,13 @@ const GAME_STATUS_ACTIVE = 1;
 const GAME_STATUS_BEFORE = 0;
 const GAME_STATUS_AFTER = 2;
 
+function getSummingItems(a, t) {
+	return a.reduce((h, n) => Object.keys(h)
+		.reduceRight((m, k) => +k + n <= t ? (m[+k + n] = m[+k + n] ? m[+k + n].concat(m[k].map(sa => sa.concat(n)))
+			: m[k].map(sa => sa.concat(n)), m)
+			: m, h), {0: [[]]})[t];
+}
+
 Vue.use(Vuex);
 
 const store = new Vuex.Store({
@@ -34,7 +41,22 @@ const store = new Vuex.Store({
 		getRoundConfirmed: state => state.roundConfirmed,
 		getErrorMessage: state => state.errorMessage,
 		isBeforeGame: state => state.gameStatus === GAME_STATUS_BEFORE,
-		
+		winProbability: state => {
+			const numbers = state.openNumbers;
+			const numberOfDie = state.numberOfDie;
+			
+			if (numbers.length === 1 && numbers.includes(1)) {
+				return 0;
+			}
+			
+			return ((1 / numberOfDie / (numbers.length)) * 100).toFixed(2);
+		},
+		possibleShutable: (state, getters) => {
+			const available = state.openNumbers;
+			const diceValue = getters.diceTotal;
+			const lessThanDie = available.filter(e => e <= diceValue);
+			return getSummingItems(lessThanDie, diceValue) || [];
+		},
 		currentRoundTotal: state => {
 			return state.currentRoundNumbers.length ? state.currentRoundNumbers.reduce((a, b) => a + b) : 0;
 		},
@@ -154,7 +176,7 @@ const store = new Vuex.Store({
 				commit('addCurrentRoundNumber', number);
 			}
 		},
-		clearShutboxWin({commit}){
+		clearShutboxWin({commit}) {
 			commit('setGameStatus', GAME_STATUS_BEFORE);
 		}
 	}
