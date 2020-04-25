@@ -101,7 +101,7 @@
 				       type="checkbox" />
 				
 				<br />
-				<label for="show-total">Show total? </label>
+				<label for="show-total">Show score? </label>
 				<input v-model="showTotal"
 				       id="show-total"
 				       type="checkbox" />
