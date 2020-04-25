@@ -250,12 +250,14 @@
 				'endGame'
 			]),
 			startGame() {
-				this.setGameStatus(1);
-				this.setRoundConfirmed(true);
+				const status = this.setGameStatus(1);
+				const confirm = this.setRoundConfirmed(true);
+				return new Promise.all([status, confirm]);
 			},
 			startGameAndRoll() {
-				this.startGame();
-				this.rollDice();
+				this.resetGame().then(() => {
+					this.rollDice();
+				});
 			},
 			rollDice() {
 				this.resetErrorMessage();
