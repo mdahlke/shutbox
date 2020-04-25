@@ -375,6 +375,12 @@
 		max-width: 800px;
 	}
 	
+	.available {
+		border-top: 40px solid transparent;
+		border-image-source: url(../assets/wood-grain-4.png);
+		border-image-slice: 90;
+	}
+	
 	.round-score {
 		position: absolute;
 		top: 50%;
@@ -417,8 +423,8 @@
 			flex: 1 0 0;
 			position: relative;
 			margin: 0 2px;
-			height: 80px;
-			line-height: 80px;
+			height: 60px;
+			line-height: 60px;
 			color: saddlebrown;
 			background-color: #e2a67b;
 			box-shadow: 1px 0 #733f19;
