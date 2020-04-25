@@ -26,7 +26,16 @@ const store = new Vuex.Store({
 		roundConfirmed: true,
 		errorMessage: '',
 		gameStatus: GAME_STATUS_BEFORE,
-		addForMe: true
+		addForMe: true,
+		showTotal: true,
+		gameStats: {
+			played: 0,
+			won: 0,
+			lost: 0,
+			games: [],
+			scores: [],
+			fingersLeft: []
+		}
 	},
 	getters: {
 		getScore: state => {
@@ -41,6 +50,7 @@ const store = new Vuex.Store({
 		getRoundConfirmed: state => state.roundConfirmed,
 		getErrorMessage: state => state.errorMessage,
 		isBeforeGame: state => state.gameStatus === GAME_STATUS_BEFORE,
+		getGameStatus: state => state.gameStatus,
 		winProbability: state => {
 			const numbers = state.openNumbers;
 			const numberOfDie = state.numberOfDie;
@@ -55,7 +65,7 @@ const store = new Vuex.Store({
 			const available = state.openNumbers;
 			const diceValue = getters.diceTotal;
 			const lessThanDie = available.filter(e => e <= diceValue);
-			return getSummingItems(lessThanDie, diceValue) || [];
+			return (getSummingItems(lessThanDie, diceValue) || []).reverse();
 		},
 		currentRoundTotal: state => {
 			return state.currentRoundNumbers.length ? state.currentRoundNumbers.reduce((a, b) => a + b) : 0;
@@ -105,6 +115,12 @@ const store = new Vuex.Store({
 		},
 		setAddForMe(state, add) {
 			state.addForMe = add;
+		},
+		setShowTotal(state, show) {
+			state.showTotal = show;
+		},
+		setGameStats(state, stats) {
+			state.stats = stats;
 		}
 	},
 	actions: {
@@ -126,11 +142,12 @@ const store = new Vuex.Store({
 			dispatch('resetDice', []);
 		},
 		resetGame({commit, dispatch, getters}) {
+			console.log('reset game');
 			commit('setRoundConfirmed', true);
 			commit('setClosedNumbers', []);
 			commit('setGameStatus', GAME_STATUS_BEFORE);
 			commit('setOpenNumbers', getters.getNumbers);
-			dispatch('resetRound', []);
+			return dispatch('resetRound', []);
 		},
 		confirmShut({commit, getters, dispatch}) {
 			return new Promise((resolve, reject) => {
@@ -178,6 +195,29 @@ const store = new Vuex.Store({
 		},
 		clearShutboxWin({commit}) {
 			commit('setGameStatus', GAME_STATUS_BEFORE);
+		},
+		recordGame({commit, state, getters}) {
+			console.log('recording');
+			return new Promise(() => {
+				const stats = state.gameStats;
+				
+				stats.played++;
+				if (state.openNumbers.length) {
+					stats.lost++;
+				} else {
+					stats.won++;
+				}
+				
+				stats.scores.push(getters.getScore);
+				stats.fingersLeft.push(getters.getOpenNumbers.length);
+				
+				commit('setGameStats', stats);
+			});
+		},
+		endGame({commit, dispatch}) {
+			return dispatch('recordGame').then(() => {
+				commit('setGameStatus', GAME_STATUS_BEFORE);
+			});
 		}
 	}
 });

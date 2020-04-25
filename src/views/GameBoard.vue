@@ -8,7 +8,7 @@
 		
 		<h1>Shutbox</h1>
 		
-		<div v-if="addForMe"
+		<div v-if="showTotal"
 		     class="your-score">
 			Your score: <span v-if="!isBeforeGame">{{ score }}</span><span v-else>n/a</span>
 		</div>
@@ -25,7 +25,8 @@
 					    	'selected': isSelected(number),
 					    	'highlight': shouldHighlight(number),
 					    	}]"
-					    class="shut-item">
+					    class="shut-item"
+					    :id="'finger-'+ number">
 						<span class="number">{{ number }}</span>
 						<span class="finger"></span>
 					</li>
@@ -39,8 +40,9 @@
 			
 			<div class="dice">
 			<span v-for="die in diceValues"
-			      class="die"
-			>{{ die }}</span>
+			      class="die dice"
+			      :class="['dice-'+ die]"
+			></span>
 				
 				<div v-if="addForMe && diceTotal"
 				     class="dice-total">
@@ -51,10 +53,18 @@
 		
 		<div class="action-buttons">
 			
-			<button @click="confirmAndRollDice"
+			<button v-if="isBeforeGame"
+			        @click="confirmAndRollDice"
 			        :disabled="(!roundConfirmed && !(currentRoundNumbers.length && (currentRoundTotal == diceTotal)))"
+			        id="roll-dice"
 			        class="btn btn-big"
 			        type="button">Roll
+			</button>
+			
+			<button v-else
+			        @click="startGameAndRoll"
+			        class="btn btn-big"
+			        type="button">Start & Roll
 			</button>
 			
 			<div v-if="errorMessage"
@@ -65,6 +75,16 @@
 				<button @click="resetGame"
 				        class="btn btn-small">
 					Reset Game
+				</button>
+				<button v-if="!doAutoplay && false"
+				        @click="autoplay"
+				        class="btn">
+					Autoplay
+				</button>
+				<button v-else-if="false"
+				        @click="stopAutoplay"
+				        class="btn">
+					Stop autoplay
 				</button>
 			</div>
 			
@@ -79,6 +99,12 @@
 				<input v-model="addForMe"
 				       id="add-for-me"
 				       type="checkbox" />
+				
+				<br />
+				<label for="show-total">Show total? </label>
+				<input v-model="showTotal"
+				       id="show-total"
+				       type="checkbox" />
 			</div>
 		</div>
 		<div v-if="false && addForMe"
@@ -90,7 +116,7 @@
 		     class="shuttable">
 			<p>Shut-able combinations</p>
 			<ul class="possible-shutable">
-				<li v-for="n in possibleShutable.reverse()">
+				<li v-for="n in possibleShutable">
 					<span v-for="x in n">{{ x }}</span>
 				</li>
 			</ul>
@@ -107,7 +133,9 @@
 		data() {
 			return {
 				shut: [],
-				roundShut: []
+				roundShut: [],
+				currentAutoplay: 0,
+				doAutoplay: false
 			};
 		},
 		computed: {
@@ -121,6 +149,7 @@
 				closedNumbers: 'getClosedNumbers',
 				diceValues: 'getDiceValues',
 				isBeforeGame: 'isBeforeGame',
+				getGameStatus: 'getGameStatus',
 				score: 'getScore',
 				isShutbox: 'isShutbox',
 				currentRoundTotal: 'currentRoundTotal',
@@ -182,10 +211,19 @@
 				set(val) {
 					this.setAddForMe(val);
 				}
+			},
+			showTotal: {
+				get() {
+					return this.$store.state.showTotal;
+				},
+				set(val) {
+					this.setShowTotal(val);
+				}
 			}
 		},
 		created() {
 			// this.resetDice();
+			this.currentAutoplay = 0;
 		},
 		methods: {
 			...mapMutations([
@@ -196,7 +234,9 @@
 				'setCurrentRoundNumbers',
 				'addCurrentRoundNumber',
 				'setRoundConfirmed',
-				'setAddForMe'
+				'setAddForMe',
+				'setShowTotal',
+				'setGameStatus'
 			]),
 			...mapActions([
 				'resetGame',
@@ -206,11 +246,19 @@
 				'confirmShut',
 				'toggleShut',
 				'startGame',
-				'clearShutboxWin'
+				'clearShutboxWin',
+				'endGame'
 			]),
+			startGame() {
+				this.setGameStatus(1);
+				this.setRoundConfirmed(true);
+			},
+			startGameAndRoll() {
+				this.startGame();
+				this.rollDice();
+			},
 			rollDice() {
 				this.resetErrorMessage();
-				this.startGame();
 				
 				if (this.roundConfirmed) {
 					// new round
@@ -223,12 +271,20 @@
 					this.setRoundConfirmed(false);
 					
 					this.availableToDrop();
+					
+					console.log('shuttable length', this.possibleShutable.length);
+					
+					if (!this.possibleShutable.length) {
+						console.log('cannot do anything');
+						this.endGame();
+						this.setGameStatus(2);
+					}
+					
 				}
 			},
 			confirmAndRollDice() {
 				this.$store.dispatch('confirmShut')
 					.then(res => {
-						console.log(this.roundConfirmed);
 						if (this.roundConfirmed) {
 							this.rollDice();
 						}
@@ -261,12 +317,49 @@
 			},
 			shouldHighlight(number) {
 				return this.addForMe && this.possibleShutable.some(e => e.length === 1 && e[0] === number);
+			},
+			canMakeAMove() {
+				return this.possibleShutable;
+			},
+			stopAutoplay() {
+				this.doAutoplay = false;
+			},
+			autoplay() {
+				this.doAutoplay = true;
+				this.currentAutoplay++;
+				
+				const $roll = document.getElementById('roll-dice');
+				this.startGame();
+				
+				let br = false;
+				let inter = setInterval(() => {
+					
+					if (!this.doAutoplay) {
+						clearInterval(inter);
+					}
+					
+					this.rollDice();
+					
+					if (this.getGameStatus === 2) {
+						clearInterval(inter);
+						this.autoplay();
+						
+						if (this.currentAutoplay > 100) {
+							return;
+						}
+					} else if (this.possibleShutable.length) {
+						this.$store.commit('setCurrentRoundNumbers', JSON.parse(JSON.stringify(this.possibleShutable[0])));
+						this.confirmAndRollDice();
+					}
+					
+				}, 30);
 			}
 		}
 	};
 </script>
 
 <style scoped lang="scss">
+	@import "../scss/dice";
 	
 	.board-wrap {
 		position: relative;
@@ -393,13 +486,14 @@
 		
 		.die {
 			margin: 0 3px;
-			border: 1px solid #000;
-			border-radius: 10%;
-			line-height: 40px;
-			height: 40px;
-			width: 40px;
-			background-color: #fff;
-			color: #000;
+			font-size: 3rem;
+			/*border: 1px solid #000;*/
+			/*border-radius: 10%;*/
+			/*line-height: 40px;*/
+			/*height: 40px;*/
+			/*width: 40px;*/
+			/*background-color: #fff;*/
+			/*color: #000;*/
 		}
 	}
 	
