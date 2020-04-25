@@ -53,7 +53,7 @@
 		
 		<div class="action-buttons">
 			
-			<button v-if="isBeforeGame"
+			<button v-if="isActiveGame && shuttable"
 			        @click="confirmAndRollDice"
 			        :disabled="(!roundConfirmed && !(currentRoundNumbers.length && (currentRoundTotal == diceTotal)))"
 			        id="roll-dice"
@@ -156,6 +156,12 @@
 				winProbability: 'winProbability',
 				possibleShutable: 'possibleShutable'
 			}),
+			isActiveGame() {
+				return this.getGameStatus === 1;
+			},
+			shuttable() {
+				return !!this.possibleShutable.length;
+			},
 			diceValues: {
 				get() {
 					return this.$store.state.diceValues;
@@ -261,6 +267,7 @@
 			},
 			rollDice() {
 				this.resetErrorMessage();
+				this.setGameStatus(1);
 				
 				if (this.roundConfirmed) {
 					// new round
@@ -279,7 +286,6 @@
 					if (!this.possibleShutable.length) {
 						console.log('cannot do anything');
 						this.endGame();
-						this.setGameStatus(2);
 					}
 					
 				}

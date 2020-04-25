@@ -216,7 +216,7 @@ const store = new Vuex.Store({
 		},
 		endGame({commit, dispatch}) {
 			return dispatch('recordGame').then(() => {
-				commit('setGameStatus', GAME_STATUS_BEFORE);
+				commit('setGameStatus', GAME_STATUS_AFTER);
 			});
 		}
 	}
