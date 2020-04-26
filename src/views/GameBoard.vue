@@ -262,6 +262,7 @@
 			},
 			startGameAndRoll() {
 				this.resetGame().then(() => {
+					this.clearShutboxWin();
 					this.rollDice();
 				});
 			},
