@@ -17,7 +17,9 @@ Vue.use(Vuex);
 
 const store = new Vuex.Store({
 	state: {
-		numbers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+		numbers: [],
+		gameVariety: 12,
+		gameVarieties: [9, 10, 12],
 		numberOfDie: 2,
 		diceValues: [],
 		openNumbers: [],
@@ -41,7 +43,9 @@ const store = new Vuex.Store({
 		getScore: state => {
 			return state.openNumbers.length ? state.openNumbers.reduce((a, b) => a + b) : 0;
 		},
-		getNumbers: state => state.numbers,
+		getNumbers: (state) => {
+			return [...Array(state.gameVariety).keys()].map(i => i + 1);
+		},
 		getNumberOfDie: state => state.numberOfDie,
 		getDiceValues: state => state.diceValues,
 		getOpenNumbers: state => state.openNumbers,
@@ -51,6 +55,7 @@ const store = new Vuex.Store({
 		getErrorMessage: state => state.errorMessage,
 		isBeforeGame: state => state.gameStatus === GAME_STATUS_BEFORE,
 		getGameStatus: state => state.gameStatus,
+		getGameVarieties: state => state.gameVarieties,
 		winProbability: state => {
 			const numbers = state.openNumbers;
 			const numberOfDie = state.numberOfDie;
@@ -81,6 +86,9 @@ const store = new Vuex.Store({
 			this.replaceState(
 				Object.assign(state, store)
 			);
+		},
+		setGameVariety(state, variety) {
+			state.gameVariety = Number(variety);
 		},
 		setGameStatus(state, status) {
 			state.gameStatus = status;

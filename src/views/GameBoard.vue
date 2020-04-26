@@ -89,6 +89,19 @@
 			</div>
 			
 			<div v-if="isBeforeGame">
+				
+				<label for="game-variety">Game variety? </label>
+				<select v-model="gameVariety"
+				        id="game-variety">
+					<option v-for="variety in gameVarieties"
+					        :value="variety"
+					>
+						{{ variety }} numbers
+					</option>
+				</select>
+				
+				<br />
+				
 				<label for="number-of-die">How many dice? </label>
 				<input v-model="numberOfDie"
 				       id="number-of-die"
@@ -154,7 +167,8 @@
 				isShutbox: 'isShutbox',
 				currentRoundTotal: 'currentRoundTotal',
 				winProbability: 'winProbability',
-				possibleShutable: 'possibleShutable'
+				possibleShutable: 'possibleShutable',
+				gameVarieties: 'getGameVarieties'
 			}),
 			isActiveGame() {
 				return this.getGameStatus === 1;
@@ -225,6 +239,14 @@
 				set(val) {
 					this.setShowTotal(val);
 				}
+			},
+			gameVariety: {
+				get() {
+					return this.$store.state.gameVariety;
+				},
+				set(val) {
+					this.setGameVariety(val);
+				}
 			}
 		},
 		created() {
@@ -242,7 +264,8 @@
 				'setRoundConfirmed',
 				'setAddForMe',
 				'setShowTotal',
-				'setGameStatus'
+				'setGameStatus',
+				'setGameVariety'
 			]),
 			...mapActions([
 				'resetGame',
