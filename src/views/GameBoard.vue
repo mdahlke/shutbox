@@ -17,6 +17,7 @@
 			<div class="available">
 				<ul class="shut-items">
 					<li v-for="number in numbers"
+					    :key="'finger-' + number"
 					    @click="toggleShut(number)"
 					    :class="[
 					    	('number-'+ number),
@@ -39,9 +40,10 @@
 			</div>
 			
 			<div class="dice">
-			<span v-for="die in diceValues"
-			      class="die dice"
+			<span v-for="(die, key) in diceValues"
+			      :key="'die-'+ key"
 			      :class="['dice-'+ die]"
+			      class="die dice"
 			></span>
 				
 				<div v-if="addForMe && diceTotal"
@@ -76,16 +78,19 @@
 				        class="btn btn-small">
 					Reset Game
 				</button>
-				<button v-if="!doAutoplay && false"
-				        @click="autoplay"
-				        class="btn">
-					Autoplay
-				</button>
-				<button v-else-if="false"
-				        @click="stopAutoplay"
-				        class="btn">
-					Stop autoplay
-				</button>
+				<template v-if="false">
+					
+					<button v-if="!doAutoplay"
+					        @click="autoplay"
+					        class="btn">
+						Autoplay
+					</button>
+					<button v-else
+					        @click="stopAutoplay"
+					        class="btn">
+						Stop autoplay
+					</button>
+				</template>
 			</div>
 			
 			<div v-if="isBeforeGame">
@@ -94,6 +99,7 @@
 				<select v-model="gameVariety"
 				        id="game-variety">
 					<option v-for="variety in gameVarieties"
+					        :key="'variety-' + variety"
 					        :value="variety"
 					>
 						{{ variety }} numbers
@@ -130,7 +136,8 @@
 			<p>Shut-able combinations</p>
 			<ul class="possible-shutable">
 				<li v-for="n in possibleShutable">
-					<span v-for="x in n">{{ x }}</span>
+					<span v-for="(x, key) in n"
+					      :key="'combo-' + key">{{ x }}</span>
 				</li>
 			</ul>
 		</div>
@@ -281,7 +288,7 @@
 			startGame() {
 				const status = this.setGameStatus(1);
 				const confirm = this.setRoundConfirmed(true);
-				return new Promise.all([status, confirm]);
+				return Promise.all([status, confirm]);
 			},
 			startGameAndRoll() {
 				this.resetGame().then(() => {
@@ -290,29 +297,28 @@
 				});
 			},
 			rollDice() {
-				this.resetErrorMessage();
-				this.setGameStatus(1);
-				
-				if (this.roundConfirmed) {
-					// new round
-					this.setDiceValues([]);
+				return new Promise((resolve, reject) => {
+					this.resetErrorMessage();
+					this.setGameStatus(1);
 					
-					for (let i = 0; i < this.numberOfDie; i++) {
-						this.addDieValue(this.getRandom());
+					if (this.roundConfirmed) {
+						// new round
+						this.setDiceValues([]);
+						
+						for (let i = 0; i < this.numberOfDie; i++) {
+							this.addDieValue(this.getRandom());
+						}
+						
+						this.setRoundConfirmed(false);
+						this.availableToDrop();
+						
+						if (!this.possibleShutable.length) {
+							this.endGame().then(reject);
+						} else {
+							resolve();
+						}
 					}
-					
-					this.setRoundConfirmed(false);
-					
-					this.availableToDrop();
-					
-					console.log('shuttable length', this.possibleShutable.length);
-					
-					if (!this.possibleShutable.length) {
-						console.log('cannot do anything');
-						this.endGame();
-					}
-					
-				}
+				});
 			},
 			confirmAndRollDice() {
 				this.$store.dispatch('confirmShut')
@@ -327,8 +333,6 @@
 			},
 			availableToDrop() {
 				const total = this.diceTotal;
-				
-				
 			},
 			dieValue(index) {
 				console.log({index});
@@ -342,13 +346,12 @@
 			},
 			isPossible(number) {
 				const i = this.possibleShutable.forEach(e => {
-					console.log({e}, e.indexOf(number));
 					return e.indexOf(number);
 				});
-				console.log(i);
 			},
 			shouldHighlight(number) {
-				return this.addForMe && this.possibleShutable.some(e => e.length === 1 && e[0] === number);
+				const isIn = this.possibleShutable.length && this.possibleShutable[0].includes(number);
+				return (this.addForMe && isIn);
 			},
 			canMakeAMove() {
 				return this.possibleShutable;
@@ -370,21 +373,25 @@
 						clearInterval(inter);
 					}
 					
-					this.rollDice();
-					
 					if (this.getGameStatus === 2) {
 						clearInterval(inter);
-						this.autoplay();
+						this.resetGame().then(() => {
+							this.autoplay();
+						});
 						
 						if (this.currentAutoplay > 100) {
 							return;
 						}
-					} else if (this.possibleShutable.length) {
-						this.$store.commit('setCurrentRoundNumbers', JSON.parse(JSON.stringify(this.possibleShutable[0])));
-						this.confirmAndRollDice();
+					} else {
+						this.rollDice().then(() => {
+							if (this.possibleShutable.length) {
+								this.$store.commit('setCurrentRoundNumbers', JSON.parse(JSON.stringify(this.possibleShutable[0])));
+								this.confirmAndRollDice();
+							}
+						});
 					}
 					
-				}, 30);
+				}, 100);
 			}
 		}
 	};
@@ -443,6 +450,7 @@
 	
 	.shut-items {
 		display: flex;
+		flex-wrap: wrap;
 		justify-content: center;
 		margin-top: 2px;
 		margin-left: 0;

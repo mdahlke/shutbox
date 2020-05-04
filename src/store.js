@@ -19,7 +19,7 @@ const store = new Vuex.Store({
 	state: {
 		numbers: [],
 		gameVariety: 12,
-		gameVarieties: [9, 10, 12],
+		gameVarieties: [9, 10, 12, 144, 10],
 		numberOfDie: 2,
 		diceValues: [],
 		openNumbers: [],
@@ -91,6 +91,7 @@ const store = new Vuex.Store({
 			state.gameVariety = Number(variety);
 		},
 		setGameStatus(state, status) {
+			console.log('setting game status');
 			state.gameStatus = status;
 		},
 		setNumberOfDie(state, number) {
@@ -171,7 +172,6 @@ const store = new Vuex.Store({
 						commit('setClosedNumbers', closed);
 						
 						const openNumbers = getters.getOpenNumbers.filter(a => !closed.includes(a));
-						console.log({closedNumbers, openNumbers});
 						
 						commit('setOpenNumbers', openNumbers);
 					} else {
