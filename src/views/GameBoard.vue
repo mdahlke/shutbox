@@ -135,7 +135,7 @@
 		     class="shuttable">
 			<p>Shut-able combinations</p>
 			<ul class="possible-shutable">
-				<li v-for="n in possibleShutable">
+				<li v-for="(n, index) in possibleShutable" :key="index">
 					<span v-for="(x, key) in n"
 					      :key="'combo-' + key">{{ x }}</span>
 				</li>
@@ -161,13 +161,8 @@
 		computed: {
 			...mapGetters({
 				diceTotal: 'diceTotal',
-				numberOfDie: 'getNumberOfDie',
 				numbers: 'getNumbers',
-				errorMessage: 'getErrorMessage',
-				roundConfirmed: 'getRoundConfirmed',
-				currentRoundNumbers: 'getCurrentRoundNumbers',
 				closedNumbers: 'getClosedNumbers',
-				diceValues: 'getDiceValues',
 				isBeforeGame: 'isBeforeGame',
 				getGameStatus: 'getGameStatus',
 				score: 'getScore',
@@ -398,7 +393,7 @@
 </script>
 
 <style scoped lang="scss">
-	@import "../scss/dice";
+	@use "../scss/dice";
 	
 	.board-wrap {
 		position: relative;
