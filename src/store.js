@@ -1,6 +1,5 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import {INITIALISE_STORE} from './mutations';
+import { createStore } from 'vuex'
+import { INITIALISE_STORE } from './mutations'
 
 const GAME_STATUS_ACTIVE = 1;
 const GAME_STATUS_BEFORE = 0;
@@ -13,9 +12,7 @@ function getSummingItems(a, t) {
 			: m, h), {0: [[]]})[t];
 }
 
-Vue.use(Vuex);
-
-const store = new Vuex.Store({
+const store = createStore({
 	state: {
 		numbers: [],
 		gameVariety: 12,
@@ -59,11 +56,11 @@ const store = new Vuex.Store({
 		winProbability: state => {
 			const numbers = state.openNumbers;
 			const numberOfDie = state.numberOfDie;
-			
+
 			if (numbers.length === 1 && numbers.includes(1)) {
 				return 0;
 			}
-			
+
 			return ((1 / numberOfDie / (numbers.length)) * 100).toFixed(2);
 		},
 		possibleShutable: (state, getters) => {
@@ -82,7 +79,6 @@ const store = new Vuex.Store({
 	},
 	mutations: {
 		[INITIALISE_STORE](state, store) {
-			// Replace the state object with the stored item
 			this.replaceState(
 				Object.assign(state, store)
 			);
@@ -91,7 +87,6 @@ const store = new Vuex.Store({
 			state.gameVariety = Number(variety);
 		},
 		setGameStatus(state, status) {
-			console.log('setting game status');
 			state.gameStatus = status;
 		},
 		setNumberOfDie(state, number) {
@@ -104,7 +99,6 @@ const store = new Vuex.Store({
 			state.diceValues = values;
 		},
 		addDieValue(state, val) {
-			console.log({val});
 			state.diceValues.push(val);
 		},
 		setErrorMessage(state, values) {
@@ -129,50 +123,47 @@ const store = new Vuex.Store({
 			state.showTotal = show;
 		},
 		setGameStats(state, stats) {
-			state.stats = stats;
+			state.gameStats = stats;
 		}
 	},
 	actions: {
-		startGame({commit}) {
+		startGame({ commit }) {
 			commit('setGameStatus', GAME_STATUS_ACTIVE);
 		},
-		resetDice({commit, getters, state}) {
+		resetDice({ commit, getters }) {
 			for (let i = 0; i < getters.getNumberOfDie; i++) {
 				commit('addDieValue', 0);
 			}
 		},
-		resetErrorMessage({commit}) {
+		resetErrorMessage({ commit }) {
 			commit('setErrorMessage', '');
 		},
-		resetRound({commit, dispatch}) {
+		resetRound({ commit, dispatch }) {
 			commit('setCurrentRoundNumbers', []);
 			commit('setDiceValues', []);
 			dispatch('resetErrorMessage', []);
 			dispatch('resetDice', []);
 		},
-		resetGame({commit, dispatch, getters}) {
-			console.log('reset game');
+		resetGame({ commit, dispatch, getters }) {
 			commit('setRoundConfirmed', true);
 			commit('setClosedNumbers', []);
 			commit('setGameStatus', GAME_STATUS_BEFORE);
 			commit('setOpenNumbers', getters.getNumbers);
 			return dispatch('resetRound', []);
 		},
-		confirmShut({commit, getters, dispatch}) {
+		confirmShut({ commit, getters, dispatch }) {
 			return new Promise((resolve, reject) => {
-				
 				dispatch('resetErrorMessage');
 				const total = getters.currentRoundTotal;
-				
+
 				if (total === getters.diceTotal) {
 					if (getters.getCurrentRoundNumbers.length) {
 						const currentRound = getters.getCurrentRoundNumbers;
 						const closedNumbers = getters.getClosedNumbers;
 						const closed = closedNumbers.concat(currentRound);
 						commit('setClosedNumbers', closed);
-						
+
 						const openNumbers = getters.getOpenNumbers.filter(a => !closed.includes(a));
-						
 						commit('setOpenNumbers', openNumbers);
 					} else {
 						commit('setClosedNumbers', getters.getCurrentRoundNumbers);
@@ -187,42 +178,40 @@ const store = new Vuex.Store({
 				}
 			});
 		},
-		toggleShut({dispatch, getters, commit}, number) {
+		toggleShut({ dispatch, getters, commit }, number) {
 			dispatch('resetErrorMessage');
 			const index = getters.getCurrentRoundNumbers.indexOf(number);
-			
-			console.log({index});
-			
+
 			if (index !== -1) {
-				const currentNumbers = getters.getCurrentRoundNumbers;
+				const currentNumbers = [...getters.getCurrentRoundNumbers];
 				currentNumbers.splice(index, 1);
 				commit('setCurrentRoundNumbers', currentNumbers);
 			} else {
 				commit('addCurrentRoundNumber', number);
 			}
 		},
-		clearShutboxWin({commit}) {
+		clearShutboxWin({ commit }) {
 			commit('setGameStatus', GAME_STATUS_BEFORE);
 		},
-		recordGame({commit, state, getters}) {
-			console.log('recording');
-			return new Promise(() => {
-				const stats = state.gameStats;
-				
+		recordGame({ commit, state, getters }) {
+			return new Promise((resolve) => {
+				const stats = { ...state.gameStats };
+
 				stats.played++;
 				if (state.openNumbers.length) {
 					stats.lost++;
 				} else {
 					stats.won++;
 				}
-				
+
 				stats.scores.push(getters.getScore);
 				stats.fingersLeft.push(getters.getOpenNumbers.length);
-				
+
 				commit('setGameStats', stats);
+				resolve();
 			});
 		},
-		endGame({commit, dispatch}) {
+		endGame({ commit, dispatch }) {
 			return dispatch('recordGame').then(() => {
 				commit('setGameStatus', GAME_STATUS_AFTER);
 			});
@@ -230,13 +219,9 @@ const store = new Vuex.Store({
 	}
 });
 
-
 store.subscribe((mutation, state) => {
 	const clonedState = JSON.parse(JSON.stringify(state));
-	
-	// Store the state object as a JSON string
 	localStorage.setItem('store', JSON.stringify(clonedState));
 });
-
 
 export default store;

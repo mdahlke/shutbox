@@ -2,25 +2,25 @@
   "name": "shutbox",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "test:unit": "vue-cli-service test:unit"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test:unit": "vitest run"
   },
   "dependencies": {
-    "core-js": "^2.6.5",
-    "vue": "^2.6.10",
-    "vue-router": "^3.0.3",
-    "vuex": "^3.0.1"
+    "vue": "^3.5.34",
+    "vue-router": "^4.4.5",
+    "vuex": "^4.1.0"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "^3.0.5",
-    "@vue/cli-plugin-unit-mocha": "^3.0.5",
-    "@vue/cli-service": "^3.0.5",
-    "@vue/test-utils": "1.0.0-beta.29",
-    "chai": "^4.1.2",
-    "node-sass": "^4.12.0",
-    "sass-loader": "^8.0.0",
-    "vue-template-compiler": "^2.6.10"
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vue/test-utils": "^2.4.6",
+    "autoprefixer": "^10.5.0",
+    "jsdom": "^25.0.1",
+    "sass": "^1.99.0",
+    "vite": "^6.4.2",
+    "vitest": "^4.1.6"
   }
 }
