@@ -4,7 +4,13 @@
       "Bash(npm audit *)",
       "Bash(npm install *)",
       "Bash(npm view *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(docker build *)",
+      "Bash(git -C /home/mdahlke/Sites/shutbox status)",
+      "Bash(git -C /home/mdahlke/Sites/shutbox log --oneline -5)",
+      "Bash(git -C /home/mdahlke/Sites/shutbox add Dockerfile nginx.conf .dockerignore)",
+      "Bash(git -C /home/mdahlke/Sites/shutbox commit -m ' *)",
+      "Bash(git -C /home/mdahlke/Sites/shutbox push origin master)"
     ]
   }
 }

@@ -22,9 +22,9 @@
 					    :class="[
 					    	('number-'+ number),
 					    	{
-					    	'shut': isShut(number),
-					    	'selected': isSelected(number),
-					    	'highlight': shouldHighlight(number),
+                                'shut': isShut(number),
+                                'selected': isSelected(number),
+                                'highlight': shouldHighlight(number),
 					    	}]"
 					    class="shut-item"
 					    :id="'finger-'+ number">
@@ -96,11 +96,13 @@
 			<div v-if="isBeforeGame">
 				
 				<label for="game-variety">Game variety? </label>
-				<select v-model="gameVariety"
-				        id="game-variety">
+				<select 
+                    v-model="gameVariety"
+				    id="game-variety"
+                >
 					<option v-for="variety in gameVarieties"
-					        :key="'variety-' + variety"
-					        :value="variety"
+                        :key="'variety-' + variety"
+                        :value="variety"
 					>
 						{{ variety }} numbers
 					</option>

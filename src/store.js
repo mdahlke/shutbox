@@ -16,7 +16,7 @@ const store = createStore({
 	state: {
 		numbers: [],
 		gameVariety: 12,
-		gameVarieties: [9, 10, 12, 144, 10],
+		gameVarieties: [9, 10, 12, 24],
 		numberOfDie: 2,
 		diceValues: [],
 		openNumbers: [],
@@ -52,6 +52,7 @@ const store = createStore({
 		getErrorMessage: state => state.errorMessage,
 		isBeforeGame: state => state.gameStatus === GAME_STATUS_BEFORE,
 		getGameStatus: state => state.gameStatus,
+		getGameStats: state => state.gameStats,
 		getGameVarieties: state => state.gameVarieties,
 		winProbability: state => {
 			const numbers = state.openNumbers;
