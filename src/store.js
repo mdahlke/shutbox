@@ -12,6 +12,19 @@ function getSummingItems(a, t) {
 			: m, h), {0: [[]]})[t];
 }
 
+function defaultStats() {
+	return {
+		played: 0,
+		won: 0,
+		lost: 0,
+		currentStreak: 0,
+		bestStreak: 0,
+		scores: [],
+		perVariety: {},
+		diceRolls: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, total: 0 }
+	};
+}
+
 const store = createStore({
 	state: {
 		numbers: [],
@@ -27,14 +40,7 @@ const store = createStore({
 		gameStatus: GAME_STATUS_BEFORE,
 		addForMe: true,
 		showTotal: true,
-		gameStats: {
-			played: 0,
-			won: 0,
-			lost: 0,
-			games: [],
-			scores: [],
-			fingersLeft: []
-		}
+		gameStats: defaultStats()
 	},
 	getters: {
 		getScore: state => {
@@ -54,14 +60,11 @@ const store = createStore({
 		getGameStatus: state => state.gameStatus,
 		getGameStats: state => state.gameStats,
 		getGameVarieties: state => state.gameVarieties,
+		minDiceForVariety: state => Math.max(2, Math.ceil(state.gameVariety / 6)),
 		winProbability: state => {
 			const numbers = state.openNumbers;
 			const numberOfDie = state.numberOfDie;
-
-			if (numbers.length === 1 && numbers.includes(1)) {
-				return 0;
-			}
-
+			if (numbers.length === 1 && numbers.includes(1)) return 0;
 			return ((1 / numberOfDie / (numbers.length)) * 100).toFixed(2);
 		},
 		possibleShutable: (state, getters) => {
@@ -79,19 +82,25 @@ const store = createStore({
 		isShutbox: state => state.gameStatus === GAME_STATUS_ACTIVE && state.openNumbers.length === 0
 	},
 	mutations: {
-		[INITIALISE_STORE](state, store) {
-			this.replaceState(
-				Object.assign(state, store)
-			);
+		[INITIALISE_STORE](state, savedStore) {
+			const merged = Object.assign({}, state, savedStore);
+			// Ensure stats shape is complete after loading from localStorage
+			merged.gameStats = Object.assign(defaultStats(), savedStore.gameStats || {});
+			this.replaceState(merged);
 		},
 		setGameVariety(state, variety) {
 			state.gameVariety = Number(variety);
+			const minDice = Math.max(2, Math.ceil(Number(variety) / 6));
+			if (state.numberOfDie < minDice) {
+				state.numberOfDie = minDice;
+			}
 		},
 		setGameStatus(state, status) {
 			state.gameStatus = status;
 		},
 		setNumberOfDie(state, number) {
-			state.numberOfDie = Number(number);
+			const minDice = Math.max(2, Math.ceil(state.gameVariety / 6));
+			state.numberOfDie = Math.max(minDice, Number(number));
 		},
 		setOpenNumbers(state, numbers) {
 			state.openNumbers = numbers;
@@ -125,6 +134,15 @@ const store = createStore({
 		},
 		setGameStats(state, stats) {
 			state.gameStats = stats;
+		},
+		recordDiceRoll(state, value) {
+			const rolls = { ...state.gameStats.diceRolls };
+			rolls[value] = (rolls[value] || 0) + 1;
+			rolls.total = (rolls.total || 0) + 1;
+			state.gameStats = { ...state.gameStats, diceRolls: rolls };
+		},
+		resetStats(state) {
+			state.gameStats = defaultStats();
 		}
 	},
 	actions: {
@@ -163,18 +181,15 @@ const store = createStore({
 						const closedNumbers = getters.getClosedNumbers;
 						const closed = closedNumbers.concat(currentRound);
 						commit('setClosedNumbers', closed);
-
 						const openNumbers = getters.getOpenNumbers.filter(a => !closed.includes(a));
 						commit('setOpenNumbers', openNumbers);
 					} else {
 						commit('setClosedNumbers', getters.getCurrentRoundNumbers);
 					}
 					commit('setRoundConfirmed', true);
-					return dispatch('resetRound').then(function () {
-						resolve();
-					});
+					return dispatch('resetRound').then(resolve);
 				} else {
-					commit('setErrorMessage', 'That doesn\'t add up');
+					commit('setErrorMessage', "That doesn't add up");
 					reject();
 				}
 			});
@@ -182,7 +197,6 @@ const store = createStore({
 		toggleShut({ dispatch, getters, commit }, number) {
 			dispatch('resetErrorMessage');
 			const index = getters.getCurrentRoundNumbers.indexOf(number);
-
 			if (index !== -1) {
 				const currentNumbers = [...getters.getCurrentRoundNumbers];
 				currentNumbers.splice(index, 1);
@@ -196,17 +210,32 @@ const store = createStore({
 		},
 		recordGame({ commit, state, getters }) {
 			return new Promise((resolve) => {
-				const stats = { ...state.gameStats };
+				const stats = JSON.parse(JSON.stringify(state.gameStats));
+				const variety = String(state.gameVariety);
+				const score = getters.getScore;
+				const won = state.openNumbers.length === 0;
 
 				stats.played++;
-				if (state.openNumbers.length) {
-					stats.lost++;
-				} else {
+				if (won) {
 					stats.won++;
+					stats.currentStreak = (stats.currentStreak || 0) + 1;
+					if (stats.currentStreak > (stats.bestStreak || 0)) {
+						stats.bestStreak = stats.currentStreak;
+					}
+				} else {
+					stats.lost++;
+					stats.currentStreak = 0;
 				}
 
-				stats.scores.push(getters.getScore);
-				stats.fingersLeft.push(getters.getOpenNumbers.length);
+				stats.scores.push(score);
+
+				if (!stats.perVariety[variety]) {
+					stats.perVariety[variety] = { played: 0, won: 0, lost: 0, scores: [] };
+				}
+				stats.perVariety[variety].played++;
+				if (won) stats.perVariety[variety].won++;
+				else stats.perVariety[variety].lost++;
+				stats.perVariety[variety].scores.push(score);
 
 				commit('setGameStats', stats);
 				resolve();
@@ -216,6 +245,9 @@ const store = createStore({
 			return dispatch('recordGame').then(() => {
 				commit('setGameStatus', GAME_STATUS_AFTER);
 			});
+		},
+		resetStats({ commit }) {
+			commit('resetStats');
 		}
 	}
 });

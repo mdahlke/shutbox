@@ -10,7 +10,10 @@
       "Bash(git -C /home/mdahlke/Sites/shutbox log --oneline -5)",
       "Bash(git -C /home/mdahlke/Sites/shutbox add Dockerfile nginx.conf .dockerignore)",
       "Bash(git -C /home/mdahlke/Sites/shutbox commit -m ' *)",
-      "Bash(git -C /home/mdahlke/Sites/shutbox push origin master)"
+      "Bash(git -C /home/mdahlke/Sites/shutbox push origin master)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5174/)",
+      "Bash(npm init *)",
+      "Bash(npx playwright *)"
     ]
   }
 }
